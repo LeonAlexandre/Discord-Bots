@@ -13,7 +13,7 @@ bot = commands.Bot(command_prefix='!')
 
 ## CLASSES
 class Vote_Poll:
-    def __init__(self, userId, choice):
+    def __init__(self, userId, choice: str):
         self.userId = userId
         self.choice = choice
 
@@ -45,7 +45,7 @@ class Poll_Tinder:
 class PollReddit():
     def __init__(self, post):
         self.post = post
-        self.vote_queue = [Vote_Poll, 0]
+        self.vote_queue = []
     
     def __repr__(self):
         return f'Poll on post: {self.post.id}'
@@ -53,10 +53,11 @@ class PollReddit():
     def count_votes(self):
         down_choice = 0
         up_choice = 0
-        for vote in self.vote_queue:
-            if vote.choice == 'upvote':
+        print('vote_queue')
+        for vote_item in self.vote_queue:
+            if vote_item.choice == 'upvote':
                 up_choice += 1
-            elif vote.choice == 'downvote':
+            elif vote_item.choice == 'downvote':
                 down_choice += 1
         return {'upvote': up_choice, 'downvote': down_choice}
     
@@ -90,9 +91,9 @@ async def create_poll_reddit(ctx):
 async def upvote_poll(ctx):
     user_of_poll = ctx.author
     user_vote = Vote_Poll( user_of_poll, 'upvote')
-    print(user_vote)
+    #print(user_vote)
     current_meme.vote_queue.append( user_vote )
-    print(current_meme.vote_queue)
+    #print(current_meme.vote_queue)
     print(f'Vote submitted: { user_vote }')
 
 @bot.command(name='downvote')
@@ -107,14 +108,14 @@ async def end_poll_reddit(ctx):
     votes = current_meme.count_votes()
     result = f'Upvotes: { votes["upvote"] } | { votes["downvote"] } : Downvotes'
     response = result
-    # if votes["upvote"] > votes["downvote"]:
-    #     reddit_bot.send_upvote
-    #     print(f'Upvote on post {current_meme.post.id}')
-    #     response = 'Upvote!\n' + result
-    # else:
-    #     reddit_bot.send_downvote
-    #     response = 'Downvote!\n' + result
-    
+    if votes["upvote"] > votes["downvote"]:
+        reddit_bot.send_upvote()
+        print(f'Upvote on post {current_meme.post.id}')
+        response = 'Upvote!\n' + result
+    else:
+        reddit_bot.send_downvote()
+        response = 'Downvote!\n' + result
+    current_meme.clear_poll()
     await ctx.send(response)
 
 
