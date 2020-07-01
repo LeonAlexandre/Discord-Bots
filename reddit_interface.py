@@ -28,4 +28,15 @@ class RedditBot():
         self.current_post = None
     
     def get_post_new(self, sub):
+        posts = self.driver.subreddit(sub).new(limit=1)
+        for post in posts:
+            self.current_post = post
+    
+    def send_upvote(self):
+        self.current_post.upvote()
+
+    def send_downvote(self):
+        self.current_post.downvote()
+
+
         

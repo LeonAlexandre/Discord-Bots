@@ -4,6 +4,7 @@ import random
 from discord.ext import commands
 from dotenv import load_dotenv
 from tinder_interface import TinderBot, Person
+from reddit_interface import RedditBot
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -41,11 +42,81 @@ class Poll_Tinder:
     def clear_poll(self):
         self.vote_queue.clear()
 
+class PollReddit():
+    def __init__(self, post):
+        self.post = post
+        self.vote_queue = [Vote_Poll, 0]
+    
+    def __repr__(self):
+        return f'Poll on post: {self.post.id}'
+
+    def count_votes(self):
+        down_choice = 0
+        up_choice = 0
+        for vote in self.vote_queue:
+            if vote.choice == 'upvote':
+                up_choice += 1
+            elif vote.choice == 'downvote':
+                down_choice += 1
+        return {'upvote': up_choice, 'downvote': down_choice}
+    
+    def clear_poll(self):
+        self.vote_queue.clear() 
+
 
 ## EVENTS
 @bot.event
 async def on_ready():
     print('Bot is ready!')
+
+@bot.command(name='meme_review')
+async def launch_reddit(ctx):
+    global reddit_bot
+    reddit_bot = RedditBot()
+
+    await ctx.send('Meme Review')
+
+@bot.command(name='next_meme')
+async def create_poll_reddit(ctx):
+    reddit_bot.get_post_new('meme')
+    global current_meme
+    current_meme = PollReddit(reddit_bot.current_post)
+
+    response = current_meme.post.url
+
+    await ctx.send(response)
+
+@bot.command(name='upvote')
+async def upvote_poll(ctx):
+    user_of_poll = ctx.author
+    user_vote = Vote_Poll( user_of_poll, 'upvote')
+    print(user_vote)
+    current_meme.vote_queue.append( user_vote )
+    print(current_meme.vote_queue)
+    print(f'Vote submitted: { user_vote }')
+
+@bot.command(name='downvote')
+async def downvote_poll(ctx):
+    user_of_poll = ctx.author
+    user_vote = Vote_Poll( user_of_poll, 'downvote')
+    current_meme.vote_queue.append( user_vote )
+    print(f'Vote submitted: { user_vote }')
+
+@bot.command(name='meme_rate')
+async def end_poll_reddit(ctx):
+    votes = current_meme.count_votes()
+    result = f'Upvotes: { votes["upvote"] } | { votes["downvote"] } : Downvotes'
+    response = result
+    # if votes["upvote"] > votes["downvote"]:
+    #     reddit_bot.send_upvote
+    #     print(f'Upvote on post {current_meme.post.id}')
+    #     response = 'Upvote!\n' + result
+    # else:
+    #     reddit_bot.send_downvote
+    #     response = 'Downvote!\n' + result
+    
+    await ctx.send(response)
+
 
 @bot.command(name='tinder')
 async def tinder_create(ctx):
@@ -54,7 +125,7 @@ async def tinder_create(ctx):
     tinder_bot.login()
     await ctx.send('Tinder is launched!')
 
-@bot.command(name='create_poll')
+@bot.command(name='create_poll_tinder')
 async def create_poll(ctx):
     poll_id = random.choice(range(100)) #placeholder till i have IDS and figure out the DB format
     global current_poll 
@@ -68,7 +139,7 @@ async def create_poll(ctx):
 
     await ctx.send(response_create_poll)
 
-@bot.command(name='end_poll')
+@bot.command(name='end_poll_tinder')
 async def end_poll(ctx):
     votes = current_poll.count_votes()
     print(tinder_bot)
@@ -84,7 +155,7 @@ async def end_poll(ctx):
     
     await ctx.send(response)
 
-@bot.command(name='vote', help='type "!vote left" or "!vote right" ')
+@bot.command(name='vote_tinder', help='type "!vote left" or "!vote right" ')
 async def vote_poll(ctx, choice: str):
     user_of_poll = ctx.author
     user_vote = Vote_Poll( user_of_poll, choice)
@@ -106,13 +177,7 @@ async def alex_talk(ctx):
     #response =  random.choice(alex_quotes)
     await ctx.send(response)
 
-@bot.command(name='roll_dice', help='Simulates rolling dice.')
-async def roll(ctx, number_of_dice: int, number_of_sides: int):
-    dice = [
-        str(random.choice(range(1, number_of_sides + 1)))
-        for _ in range(number_of_dice)
-    ]
-    await ctx.send(', '.join(dice))
+
 
 @bot.event
 async def on_command_error(ctx, error):
