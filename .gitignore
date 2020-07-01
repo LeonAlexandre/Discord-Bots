@@ -1,0 +1,11 @@
+
+.env
+info_login.py
+mp,840x830,matte,f8f8f8,t-pad,1000x1000,f8f8f8.jpg
+ChadBot  Notes.txt
+api_notes.py
+__pycache__/info_login.cpython-37.pyc
+__pycache__/tinder_interface.cpython-37.pyc
+chromedriver.exe
+debug.log
+tinderbot.py
