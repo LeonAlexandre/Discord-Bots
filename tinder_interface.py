@@ -5,7 +5,8 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-from info_login import username, password
+import os
+from dotenv import load_dotenv
 
 class Person():
     def __init__(self, bot):
@@ -14,7 +15,6 @@ class Person():
         self.age=''
         self.bio=''
         #removing code to harvest images
-        #self.pic_list=[]
     
     def get_info(self):
         #click expand button
@@ -23,12 +23,7 @@ class Person():
         self.name = self.bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/div/h1').text
         self.age = self.bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/span').text
         self.bio = self.bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[2]').text
-        #pic = self.bot.driver.find_elements_by_css_selector("[aria-label='Profile slider']")
-        #for p in pic:
-        #    att = p.get_attribute('style')
-        #    att = att.split('"')
-        #    self.pic_list.append(att[1])
-
+        
 class TinderBot():
     def __init__(self):
         self.driver = webdriver.Chrome()
@@ -39,21 +34,21 @@ class TinderBot():
 
     def login(self):
         self.driver.get('https://tinder.com')
+        load_dotenv()
+        USERNAME = os.getenv('USERNAME_TINDER')
+        PASSWORD = os.getenv('PASSWORD_TINDER')
 
         time.sleep(5)
 
         fb_btn = self.driver.find_element_by_xpath('//*[@id="modal-manager"]/div/div/div/div/div[3]/span/div[2]/button')
         fb_btn.click()
-
         # switch to login popup
         base_window = self.driver.window_handles[0]
         self.driver.switch_to_window(self.driver.window_handles[1])
-
         email_in = self.driver.find_element_by_xpath('//*[@id="email"]')
-        email_in.send_keys(username)
-
+        email_in.send_keys(USERNAME)
         pw_in = self.driver.find_element_by_xpath('//*[@id="pass"]')
-        pw_in.send_keys(password)
+        pw_in.send_keys(PASSWORD)
         pw_in.send_keys(Keys.RETURN)
         self.driver.switch_to_window(base_window)
 
@@ -86,10 +81,6 @@ class TinderBot():
 # info: get the relevant info by parsing lel
 
 #expand bio
-# expand_btn = bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div/div[1]/div[3]/div[6]/button')
-#name = bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/div/h1').text
-#age = bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[1]/div/div[1]/span').text
-#bio = bot.driver.find_element_by_xpath('//*[@id="content"]/div/div[1]/div/main/div[1]/div/div/div[1]/div[1]/div/div[2]/div[2]').text
 
 # pic = bot.driver.find_elements_by_css_selector("[aria-label='Profile slider']")
 # p_list = []
